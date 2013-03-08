@@ -23,6 +23,7 @@ class MainFrame extends JFrame {
         this.setLayout(null);
         this.add(new Grid());
         this.add(new StartButton());
+        this.add(new RunButton());
         this.add(new AnswerList());
     }
 }
@@ -56,12 +57,60 @@ class State {
         }
     }
     int map[][] = new int[8][8];
-    boolean visit[][] = new boolean[8][8];
+    boolean bingo[][] = new boolean[8][8];
     int run() {
         int ret = 0;
+        int tmp = 0;
+        do {
+            tmp = go();
+            ret += tmp;
+        } while (tmp != 0);
+        return ret;
+    }
+    private boolean same(int x, int y, int z) {
+        if (x == 0 || y == 0 || z == 0)
+            return false;
+        if (x == 6) {
+            return y == z || y == 6 || z == 6;
+        } else {
+            return (y == x || y == 6) && (z == x || z == 6);
+        }
+    }
+    private int go() {
+        int ret = 0;
+        for (int i = 0; i < 8; ++i) {
+            Arrays.fill(bingo[i], false);
+        }
         for (int i = 0; i < 8; ++i) {
             for (int j = 0; j < 8; ++j) {
+                if (i < 6 && same(map[i][j], map[i + 1][j], map[i + 2][j])) {
+                    bingo[i][j] = true;
+                    bingo[i + 1][j] = true;
+                    bingo[i + 2][j] = true;
+                }
+                if (j < 6 && same(map[i][j], map[i][j + 1], map[i][j + 2])) {
+                    bingo[i][j] = true;
+                    bingo[i][j + 1] = true;
+                    bingo[i][j + 2] = true;
+                }
             }
+        }
+        for (int i = 0; i < 8; ++i) {
+            for (int j = 0; j < 8; ++j) {
+                if (bingo[i][j]) {
+                    ++ret;
+                }
+            }
+        }
+        for (int i = 0; i < 8; ++i) {
+            int tmp[] = new int[8];
+            int now = 0;
+            for (int j = 7; j >= 0; --j) {
+                if (!bingo[i][j]) {
+                    tmp[now++] = map[i][j];
+                }
+            }
+            map[i] = Arrays.copyOf(tmp, 8);
         }
         return ret;
     }
@@ -74,7 +123,7 @@ class Controller {
         Random rand = new Random();
         for (int i = 0; i < 8; ++i) {
             for (int j = 0; j < 8; ++j) {
-                state.map[i][j] = 0;//rand.nextInt(5) + 1;
+                state.map[i][j] = 0;
             }
         }
         try {
@@ -137,13 +186,6 @@ class StartButton extends JButton implements ActionListener{
                     if (same(aim.getRGB(i, j), tot.getRGB(x + i, y + j))) {
                         ++ret;
                     } 
-/*                    if (x == 254 && y == 122) {
-                        int t1 = aim.getRGB(i, j);
-                        int t2 = tot.getRGB(x + i, y + j);
-                        System.out.println(t1 + " " + t2);
-//                        System.out.println(((t1 >> 16) & 0xff) + " " + ((t2 >> 16) & 0xff) + " " + ((t1 >> 8) & 0xff) + " " + ((t2 >> 8) & 0xff) + " " + (t1 & 0xff) + " " + (t2 & 0xff));
-                        System.out.println(i + " " + j);
-                    }*/
                 }
             }
         }
@@ -218,14 +260,24 @@ class StartButton extends JButton implements ActionListener{
             }
         }
     }
-    private void analysis() {
-    }
     public void actionPerformed(ActionEvent event) {
         try {
             this.getImage();
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+}
+
+class RunButton extends JButton implements ActionListener {
+    RunButton() {
+        this.setSize(90, 30);
+        this.setLocation(660, 20);
+        this.setText("Solve");
+        this.addActionListener(this);
+    }
+    public void actionPerformed(ActionEvent event) {
+        Solver.run();
     }
 }
 
@@ -240,7 +292,7 @@ class SolutionQueue {
 }
 
 class Solver {
-    void run() {
+    static void run() {
         for (int i = 0; i < 8; ++i) {
             for (int j = 0; j < 8; ++j) {
                 if (i != 7) {
@@ -250,14 +302,21 @@ class Solver {
                     tmpState.map[i + 1][j] = tmp;
                     int cnt = tmpState.run();
                     if (cnt > 7) {
-
+                        System.out.println(i + " " + j + " " + (i + 1) + " " + j + cnt);
                     }
                 }
                 if (j != 7) {
+                    State tmpState = new State(Controller.state);
+                    int tmp = tmpState.map[i][j];
+                    tmpState.map[i][j] = tmpState.map[i][j + 1];
+                    tmpState.map[i][j + 1] = tmp;
+                    int cnt = tmpState.run();
+                    if (cnt > 7) {
+                        System.out.println(i + " " + j + " " + i + " " + (j + 1) + cnt);
+                    }
                 }
             }
         }
     }
 }
-
 
