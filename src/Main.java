@@ -16,6 +16,7 @@ public class Main {
 }
 
 class MainFrame extends JFrame {
+    static SolutionQueue sq = new SolutionQueue();
     static AnswerList alist = new AnswerList();
     static JScrollPane js = new JScrollPane(alist);
     static Grid grid = new Grid();
@@ -181,16 +182,6 @@ class StartButton extends JButton implements ActionListener{
         this.setText("Go");
         this.addActionListener(this);
     }
-/*    private boolean same(int x, int y) {
-        final int delta = 10;
-        if (Math.abs(((x >> 16) & 0xff) - ((y >> 16) & 0xff)) > delta)
-            return false;
-        if (Math.abs(((x >> 8) & 0xff) - ((y >> 8) & 0xff)) > delta)
-            return false;
-        if (Math.abs((x & 0xff) - (y & 0xff)) > delta)
-            return false;
-        return true;
-    }*/
     private boolean match(int x, int y, final BufferedImage aim, final BufferedImage tot) {
         int ret = 0;
         int width = tot.getWidth();
@@ -210,8 +201,8 @@ class StartButton extends JButton implements ActionListener{
         int width = tot.getWidth();
         int height = tot.getHeight();
         int ret = 0;
-        int[] dx = {8, 8, 30, 30, 10, 28, 10, 28};
-        int[] dy = {8, 30, 8, 30, 10, 28, 28, 10};
+        int[] dx = {8, 8, 30, 30};
+        int[] dy = {8, 30, 8, 30};
         Random rand = new Random();
         for (int i = 0; i < 8; ++i) {
             if (x + dx[i] < width && y + dy[i] < height) {
@@ -220,7 +211,7 @@ class StartButton extends JButton implements ActionListener{
                 }
             }
         }
-        return ret > 4;
+        return ret > 2;
     }
     private void getImage() throws Exception {
         Toolkit toolkit = Toolkit.getDefaultToolkit();
@@ -262,6 +253,7 @@ class StartButton extends JButton implements ActionListener{
                 } else if (isColor(nowI, nowJ, black, image)) {
                     Controller.state.map[i][j] = 1;
                 } else {
+                    Controller.state.map[i][j] = 0;
                     System.out.println("xxx");
                 }
                 Grid.data[i][j].update();
@@ -297,7 +289,12 @@ class AnswerList extends JList implements ListSelectionListener{
         this.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         this.addListSelectionListener(this);
     }
-    void add(int x0, int y0, int x1, int y1, int num) {
+    void add(Solution s) {
+        int x0 = s.x0;
+        int x1 = s.x1;
+        int y0 = s.y0;
+        int y1 = s.y1;
+        int num = s.num;
         array.addElement(String.format("(%d, %d) --- (%d, %d)    [%d]", x0, y0, x1, y1, num));
         answer.addElement(x0 * 1 + y0 * 8 + x1 * 64 + y1 * 512);
         this.setListData(array);
@@ -327,6 +324,7 @@ class AnswerList extends JList implements ListSelectionListener{
 
 class Solver {
     static void run() {
+        MainFrame.sq.clear();
         MainFrame.alist.clear();
         for (int i = 0; i < 8; ++i) {
             for (int j = 0; j < 8; ++j) {
@@ -337,7 +335,8 @@ class Solver {
                     tmpState.map[i + 1][j] = tmp;
                     int cnt = tmpState.run();
                     if (cnt > 7) {
-                        MainFrame.alist.add(i, j, i + 1, j, cnt);
+//                        MainFrame.alist.add(i, j, i + 1, j, cnt);
+                        MainFrame.sq.add(i, j, i + 1, j, cnt);
                     }
                 }
                 if (j != 7) {
@@ -347,11 +346,56 @@ class Solver {
                     tmpState.map[i][j + 1] = tmp;
                     int cnt = tmpState.run();
                     if (cnt > 7) {
-                        MainFrame.alist.add(i, j, i, j + 1, cnt);
+//                        MainFrame.alist.add(i, j, i, j + 1, cnt);
+                        MainFrame.sq.add(i, j, i, j + 1, cnt);
                     }
                 }
             }
         }
+        for (Solution s : MainFrame.sq.sort()) {
+            System.out.println(s);
+            MainFrame.alist.add(s);
+        }
+    }
+}
+
+class Solution implements Comparable{
+    Solution() {
+    }
+    Solution(int x0, int y0, int x1, int y1, int num) {
+        this.num = num;
+        this.x0 = x0;
+        this.x1 = x1;
+        this.y0 = y0;
+        this.y1 = y1;
+    }
+    int x0, x1, y0, y1, num;
+    public int compareTo(Object o0) {
+        Solution s0 = (Solution)o0;
+        if (this.num > s0.num)
+            return -1;
+        if (this.num < s0.num)
+            return 1;
+        return 0;
+    }
+    public String toString() {
+        return ((Integer)num).toString();
+    }
+}
+
+class SolutionQueue {
+    SolutionQueue() {
+    }
+    ArrayList<Solution> solutionQueue = new ArrayList<Solution>();
+    void add(int x0, int y0, int x1, int y1, int num) {
+        solutionQueue.add(new Solution(x0, y0, x1, y1, num));
+    }
+    ArrayList<Solution> sort() {
+        Collections.sort(solutionQueue);
+        return solutionQueue;
+    }
+    void clear() {
+        solutionQueue.clear();
     }
 }
 
