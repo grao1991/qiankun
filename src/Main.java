@@ -84,6 +84,22 @@ class State {
             return (y == x || y == 6) && (z == x || z == 6);
         }
     }
+    private void mark(int x, int y) {
+        bingo[x][y] = true;
+        if (map[x][y] == 7) {
+            int dx[] = {1, 1, 1, 0, -1, -1, -1, 0};
+            int dy[] = {-1, 0, 1, 1, 1, 0, -1, -1};
+            for (int i = 0; i < 8; ++i) {
+                int nx = x + dx[i];
+                int ny = y + dy[i];
+                if (0 <= nx && nx < 8 && 0 <= ny && ny < 8) {
+                    if (!bingo[nx][ny]) {
+                        mark(nx, ny);
+                    }
+                }
+            }
+        }
+    }
     private int go() {
         int ret = 0;
         for (int i = 0; i < 8; ++i) {
@@ -92,14 +108,14 @@ class State {
         for (int i = 0; i < 8; ++i) {
             for (int j = 0; j < 8; ++j) {
                 if (i < 6 && same(map[i][j], map[i + 1][j], map[i + 2][j])) {
-                    bingo[i][j] = true;
-                    bingo[i + 1][j] = true;
-                    bingo[i + 2][j] = true;
+                    mark(i, j);
+                    mark(i + 1, j);
+                    mark(i + 2, j);
                 }
                 if (j < 6 && same(map[i][j], map[i][j + 1], map[i][j + 2])) {
-                    bingo[i][j] = true;
-                    bingo[i][j + 1] = true;
-                    bingo[i][j + 2] = true;
+                    mark(i, j);
+                    mark(i, j + 1);
+                    mark(i, j + 2);
                 }
             }
         }
@@ -126,7 +142,7 @@ class State {
 
 class Controller {
     static State state = new State();
-    static ImageIcon bi[] = new ImageIcon[7];
+    static ImageIcon bi[] = new ImageIcon[8];
     Controller() {
         Random rand = new Random();
         for (int i = 0; i < 8; ++i) {
@@ -142,6 +158,7 @@ class Controller {
             bi[4] = new ImageIcon("../res/violet.jpg");
             bi[5] = new ImageIcon("../res/yellow.jpg");
             bi[6] = new ImageIcon("../res/all.jpg");
+            bi[7] = new ImageIcon("../res/init.jpg");
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -227,8 +244,8 @@ class StartButton extends JButton implements ActionListener{
         BufferedImage all = ImageIO.read(new File("../res/all.bmp"));
         int minI = width;
         int minJ = height;
-        for (int i = 0; i < minI; ++i) {
-            for (int j = 0; j < minJ; ++j) {
+        for (int i = 150; i < minI; ++i) {
+            for (int j = 100; j < minJ; ++j) {
                 if (match(i, j, black, image) || match(i, j, blue, image) || match(i, j, red, image) || match(i, j, violet, image) || match(i, j, yellow, image) || match(i, j, all, image)) {
                     System.out.println(i + " " + j);
                     minI = Math.min(i, minI);
@@ -253,7 +270,7 @@ class StartButton extends JButton implements ActionListener{
                 } else if (isColor(nowI, nowJ, black, image)) {
                     Controller.state.map[i][j] = 1;
                 } else {
-                    Controller.state.map[i][j] = 0;
+                    Controller.state.map[i][j] = 7;
                     System.out.println("xxx");
                 }
                 Grid.data[i][j].update();
