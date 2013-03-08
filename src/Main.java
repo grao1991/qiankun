@@ -3,6 +3,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.image.*;
 import java.awt.event.*;
+import javax.swing.event.*;
+import javax.swing.border.*;
 import java.io.*;
 import javax.imageio.*;
 
@@ -16,15 +18,18 @@ public class Main {
 class MainFrame extends JFrame {
     static AnswerList alist = new AnswerList();
     static JScrollPane js = new JScrollPane(alist);
+    static Grid grid = new Grid();
+    static StartButton sbutton = new StartButton();
+    static RunButton rbutton = new RunButton();
     MainFrame() {
         this.setTitle("xyq");
         this.setSize(800, 400);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setLocation(1000, 100);
         this.setLayout(null);
-        this.add(new Grid());
-        this.add(new StartButton());
-        this.add(new RunButton());
+        this.add(grid);
+        this.add(sbutton);
+        this.add(rbutton);
         js.setSize(300, 200);
         js.setLocation(450, 70);
         this.add(js);
@@ -40,6 +45,9 @@ class GridButton extends JButton {
         this.y = y;
         this.setLocation(10 + 41 * x, 10 + 41 * y);
         this.update();
+//        this.setBorder(new EtchedBorder(Color.red, Color.black));
+        this.setBorder(BorderFactory.createLineBorder(Color.red, 3));
+        this.setBorderPainted(false);
     }
     void update() {
         this.setIcon(Controller.bi[Controller.state.map[x][y]]);
@@ -154,6 +162,16 @@ class Grid extends JPanel {
         this.setSize(420, 420);
         this.updateUI();
     }
+    void clearBorder() {
+        for (int i = 0; i < 8; ++i) {
+            for (int j = 0; j < 8; ++j) {
+                data[i][j].setBorderPainted(false);
+            }
+        }
+    }
+    void setBorder(int x, int y) {
+        data[x][y].setBorderPainted(true);
+    }
 }
 
 class StartButton extends JButton implements ActionListener{
@@ -210,13 +228,6 @@ class StartButton extends JButton implements ActionListener{
         int height = toolkit.getScreenSize().height;
         BufferedImage image = (new Robot()).createScreenCapture(new Rectangle(0, 0, width, height));
         System.out.println(image.getWidth() + " " + image.getHeight());
-        BufferedImage color = new BufferedImage(39, 39, BufferedImage.TYPE_INT_RGB);
-        for (int i = 0; i < 39; ++i) {
-            for (int j = 0; j < 39; ++j) {
-                color.setRGB(i, j, image.getRGB(293 + i, 278 + j));
-            }
-        }
-        ImageIO.write(color, "BMP", new File("all.bmp"));
         BufferedImage black = ImageIO.read(new File("../res/black.bmp"));
         BufferedImage blue = ImageIO.read(new File("../res/blue.bmp"));
         BufferedImage red = ImageIO.read(new File("../res/red.bmp"));
@@ -278,18 +289,36 @@ class RunButton extends JButton implements ActionListener {
     }
 }
 
-class AnswerList extends JList {
+class AnswerList extends JList implements ListSelectionListener{
     Vector array = new Vector();
+    Vector<Integer> answer = new Vector<Integer>();
     AnswerList() {
         this.setListData(array);
+        this.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        this.addListSelectionListener(this);
     }
-    void add(int x0, int y0, int x1, int y1) {
-        array.addElement(String.format("(%d, %d) --- (%d, %d)", x0, y0, x1, y1));
+    void add(int x0, int y0, int x1, int y1, int num) {
+        array.addElement(String.format("(%d, %d) --- (%d, %d)    [%d]", x0, y0, x1, y1, num));
+        answer.addElement(x0 * 1 + y0 * 8 + x1 * 64 + y1 * 512);
         this.setListData(array);
     }
     void clear() {
         array.clear();
+        answer.clear();
         this.setListData(array);
+    }
+    public void valueChanged(ListSelectionEvent e) {
+        int value = answer.elementAt(this.getSelectedIndex());
+        int x0 = value & 7;
+        value >>= 3;
+        int y0 = value & 7;
+        value >>= 3;
+        int x1 = value & 7;
+        value >>= 3;
+        int y1 = value;
+        MainFrame.grid.clearBorder();
+        MainFrame.grid.setBorder(x0, y0);
+        MainFrame.grid.setBorder(x1, y1);
     }
 }
 
@@ -305,7 +334,7 @@ class Solver {
                     tmpState.map[i + 1][j] = tmp;
                     int cnt = tmpState.run();
                     if (cnt > 7) {
-                        MainFrame.alist.add(i, j, i + 1, j);
+                        MainFrame.alist.add(i, j, i + 1, j, cnt);
                         System.out.println(i + " " + j + " " + (i + 1) + " " + j + " " + cnt);
                     }
                 }
@@ -316,7 +345,7 @@ class Solver {
                     tmpState.map[i][j + 1] = tmp;
                     int cnt = tmpState.run();
                     if (cnt > 7) {
-                        MainFrame.alist.add(i, j, i, j + 1);
+                        MainFrame.alist.add(i, j, i, j + 1, cnt);
                         System.out.println(i + " " + j + " " + i + " " + (j + 1) + " " + cnt);
                     }
                 }
