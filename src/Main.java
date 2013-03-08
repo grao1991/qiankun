@@ -14,22 +14,21 @@ public class Main {
 }
 
 class MainFrame extends JFrame {
+    static AnswerList alist = new AnswerList();
+    static JScrollPane js = new JScrollPane(alist);
     MainFrame() {
         this.setTitle("xyq");
         this.setSize(800, 400);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        this.setVisible(true);
         this.setLocation(1000, 100);
         this.setLayout(null);
         this.add(new Grid());
         this.add(new StartButton());
         this.add(new RunButton());
-        this.add(new AnswerList());
-    }
-}
-
-class ResultList extends JList {
-    ResultList() {
+        js.setSize(300, 200);
+        js.setLocation(450, 70);
+        this.add(js);
+        this.setVisible(true);
     }
 }
 
@@ -104,10 +103,10 @@ class State {
         }
         for (int i = 0; i < 8; ++i) {
             int tmp[] = new int[8];
-            int now = 0;
+            int now = 7;
             for (int j = 7; j >= 0; --j) {
                 if (!bingo[i][j]) {
-                    tmp[now++] = map[i][j];
+                    tmp[now--] = map[i][j];
                 }
             }
             map[i] = Arrays.copyOf(tmp, 8);
@@ -123,7 +122,7 @@ class Controller {
         Random rand = new Random();
         for (int i = 0; i < 8; ++i) {
             for (int j = 0; j < 8; ++j) {
-                state.map[i][j] = 0;
+                state.map[i][j] = rand.nextInt(5) + 1;
             }
         }
         try {
@@ -164,9 +163,7 @@ class StartButton extends JButton implements ActionListener{
         this.setText("Go");
         this.addActionListener(this);
     }
-    private void getPoint(final BufferedImage image, int x, int y) {
-    }
-    private boolean same(int x, int y) {
+/*    private boolean same(int x, int y) {
         final int delta = 10;
         if (Math.abs(((x >> 16) & 0xff) - ((y >> 16) & 0xff)) > delta)
             return false;
@@ -175,7 +172,7 @@ class StartButton extends JButton implements ActionListener{
         if (Math.abs((x & 0xff) - (y & 0xff)) > delta)
             return false;
         return true;
-    }
+    }*/
     private boolean match(int x, int y, final BufferedImage aim, final BufferedImage tot) {
         int ret = 0;
         int width = tot.getWidth();
@@ -183,7 +180,7 @@ class StartButton extends JButton implements ActionListener{
         for (int i = 18; i < 21; ++i) {
             for (int j = 18; j < 21; ++j) {
                 if (x + i < width && y + j < height) {
-                    if (same(aim.getRGB(i, j), tot.getRGB(x + i, y + j))) {
+                    if (aim.getRGB(i, j) == tot.getRGB(x + i, y + j)) {
                         ++ret;
                     } 
                 }
@@ -282,13 +279,16 @@ class RunButton extends JButton implements ActionListener {
 }
 
 class AnswerList extends JList {
+    static Vector array = new Vector();
     AnswerList() {
-        this.setLocation(450, 100);
+        this.setListData(array);
+        array.addElement("123");
+        array.addElement("1234");
     }
-}
-
-class SolutionQueue {
-    ArrayList<Integer> array = new ArrayList<Integer>();
+    void add(int x0, int y0, int x1, int y1) {
+        array.addElement(String.format("(%d, %d) --- (%d, %d)", x0, y0, x1, y1));
+        this.validate();
+    }
 }
 
 class Solver {
@@ -302,6 +302,7 @@ class Solver {
                     tmpState.map[i + 1][j] = tmp;
                     int cnt = tmpState.run();
                     if (cnt > 7) {
+                        MainFrame.alist.add(i, j, i + 1, j);
                         System.out.println(i + " " + j + " " + (i + 1) + " " + j + " " + cnt);
                     }
                 }
@@ -312,6 +313,7 @@ class Solver {
                     tmpState.map[i][j + 1] = tmp;
                     int cnt = tmpState.run();
                     if (cnt > 7) {
+                        MainFrame.alist.add(i, j, i, j + 1);
                         System.out.println(i + " " + j + " " + i + " " + (j + 1) + " " + cnt);
                     }
                 }
