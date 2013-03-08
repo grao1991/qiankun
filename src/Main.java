@@ -201,17 +201,17 @@ class StartButton extends JButton implements ActionListener{
         int width = tot.getWidth();
         int height = tot.getHeight();
         int ret = 0;
-        int[] dx = {8, 8, 30, 30};
-        int[] dy = {8, 30, 8, 30};
+        int[] dx = {19, 20};
+        int[] dy = {38, 38};
         Random rand = new Random();
-        for (int i = 0; i < 8; ++i) {
+        for (int i = 0; i < 2; ++i) {
             if (x + dx[i] < width && y + dy[i] < height) {
                 if (color.getRGB(dx[i], dy[i]) == tot.getRGB(x + dx[i], y + dy[i])) {
                     ++ret;
                 }
             }
         }
-        return ret > 2;
+        return ret == 2;
     }
     private void getImage() throws Exception {
         Toolkit toolkit = Toolkit.getDefaultToolkit();
@@ -334,7 +334,7 @@ class Solver {
                     tmpState.map[i][j] = tmpState.map[i + 1][j];
                     tmpState.map[i + 1][j] = tmp;
                     int cnt = tmpState.run();
-                    if (cnt > 7) {
+                    if (cnt > 0) {
 //                        MainFrame.alist.add(i, j, i + 1, j, cnt);
                         MainFrame.sq.add(i, j, i + 1, j, cnt);
                     }
@@ -345,7 +345,7 @@ class Solver {
                     tmpState.map[i][j] = tmpState.map[i][j + 1];
                     tmpState.map[i][j + 1] = tmp;
                     int cnt = tmpState.run();
-                    if (cnt > 7) {
+                    if (cnt > 0) {
 //                        MainFrame.alist.add(i, j, i, j + 1, cnt);
                         MainFrame.sq.add(i, j, i, j + 1, cnt);
                     }
