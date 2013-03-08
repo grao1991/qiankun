@@ -220,7 +220,7 @@ class StartButton extends JButton implements ActionListener{
                 }
             }
         }
-        return ret > 5;
+        return ret > 4;
     }
     private void getImage() throws Exception {
         Toolkit toolkit = Toolkit.getDefaultToolkit();
