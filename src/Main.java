@@ -210,17 +210,17 @@ class StartButton extends JButton implements ActionListener{
         int width = tot.getWidth();
         int height = tot.getHeight();
         int ret = 0;
-        int[] dx = {8, 8, 30, 30};
-        int[] dy = {8, 30, 8, 30};
+        int[] dx = {8, 8, 30, 30, 10, 28, 10, 28};
+        int[] dy = {8, 30, 8, 30, 10, 28, 28, 10};
         Random rand = new Random();
-        for (int i = 0; i < 4; ++i) {
+        for (int i = 0; i < 8; ++i) {
             if (x + dx[i] < width && y + dy[i] < height) {
                 if (color.getRGB(dx[i], dy[i]) == tot.getRGB(x + dx[i], y + dy[i])) {
                     ++ret;
                 }
             }
         }
-        return ret > 2;
+        return ret > 5;
     }
     private void getImage() throws Exception {
         Toolkit toolkit = Toolkit.getDefaultToolkit();
@@ -249,8 +249,8 @@ class StartButton extends JButton implements ActionListener{
             for (int j = 0; j < 8; ++j) {
                 int nowI = minI + i * 39;
                 int nowJ = minJ + j * 39;
-                if (isColor(nowI, nowJ, black, image)) {
-                    Controller.state.map[i][j] = 1;
+                if (isColor(nowI, nowJ, all, image)) {
+                    Controller.state.map[i][j] = 6;
                 } else if (isColor(nowI, nowJ, blue, image)) {
                     Controller.state.map[i][j] = 2;
                 } else if (isColor(nowI, nowJ, red, image)) {
@@ -259,8 +259,8 @@ class StartButton extends JButton implements ActionListener{
                     Controller.state.map[i][j] = 4;
                 } else if (isColor(nowI, nowJ, yellow, image)) {
                     Controller.state.map[i][j] = 5;
-                } else if (isColor(nowI, nowJ, all, image)) {
-                    Controller.state.map[i][j] = 6;
+                } else if (isColor(nowI, nowJ, black, image)) {
+                    Controller.state.map[i][j] = 1;
                 } else {
                     System.out.println("xxx");
                 }
@@ -308,7 +308,10 @@ class AnswerList extends JList implements ListSelectionListener{
         this.setListData(array);
     }
     public void valueChanged(ListSelectionEvent e) {
-        int value = answer.elementAt(this.getSelectedIndex());
+        int select = this.getSelectedIndex();
+        if (select == -1)
+            return;
+        int value = answer.elementAt(select);
         int x0 = value & 7;
         value >>= 3;
         int y0 = value & 7;
@@ -335,7 +338,6 @@ class Solver {
                     int cnt = tmpState.run();
                     if (cnt > 7) {
                         MainFrame.alist.add(i, j, i + 1, j, cnt);
-                        System.out.println(i + " " + j + " " + (i + 1) + " " + j + " " + cnt);
                     }
                 }
                 if (j != 7) {
@@ -346,7 +348,6 @@ class Solver {
                     int cnt = tmpState.run();
                     if (cnt > 7) {
                         MainFrame.alist.add(i, j, i, j + 1, cnt);
-                        System.out.println(i + " " + j + " " + i + " " + (j + 1) + " " + cnt);
                     }
                 }
             }
