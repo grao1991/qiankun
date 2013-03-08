@@ -177,8 +177,8 @@ class StartButton extends JButton implements ActionListener{
         int ret = 0;
         int width = tot.getWidth();
         int height = tot.getHeight();
-        for (int i = 18; i < 21; ++i) {
-            for (int j = 18; j < 21; ++j) {
+        for (int i = 0; i < 5; ++i) {
+            for (int j = 0; j < 5; ++j) {
                 if (x + i < width && y + j < height) {
                     if (aim.getRGB(i, j) == tot.getRGB(x + i, y + j)) {
                         ++ret;
@@ -186,7 +186,7 @@ class StartButton extends JButton implements ActionListener{
                 }
             }
         }
-        return ret == 9;
+        return ret == 25;
     }
     private boolean isColor(int x, int y, BufferedImage color, BufferedImage tot) {
         int width = tot.getWidth();
@@ -279,20 +279,23 @@ class RunButton extends JButton implements ActionListener {
 }
 
 class AnswerList extends JList {
-    static Vector array = new Vector();
+    Vector array = new Vector();
     AnswerList() {
         this.setListData(array);
-        array.addElement("123");
-        array.addElement("1234");
     }
     void add(int x0, int y0, int x1, int y1) {
         array.addElement(String.format("(%d, %d) --- (%d, %d)", x0, y0, x1, y1));
-        this.validate();
+        this.setListData(array);
+    }
+    void clear() {
+        array.clear();
+        this.setListData(array);
     }
 }
 
 class Solver {
     static void run() {
+        MainFrame.alist.clear();
         for (int i = 0; i < 8; ++i) {
             for (int j = 0; j < 8; ++j) {
                 if (i != 7) {
