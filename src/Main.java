@@ -20,7 +20,8 @@ class MainFrame extends JFrame {
     static AnswerList alist = new AnswerList();
     static JScrollPane js = new JScrollPane(alist);
     static Grid grid = new Grid();
-    static StartButton sbutton = new StartButton();
+    static StartButton sbutton0 = new StartButton(0);
+    static StartButton sbutton1 = new StartButton(1);
     static RunButton rbutton = new RunButton();
     MainFrame() {
         this.setTitle("xyq");
@@ -29,7 +30,10 @@ class MainFrame extends JFrame {
         this.setLocation(1000, 100);
         this.setLayout(null);
         this.add(grid);
-        this.add(sbutton);
+        sbutton0.setLocation(450, 20);
+        sbutton1.setLocation(500, 20);
+        this.add(sbutton0);
+        this.add(sbutton1);
         this.add(rbutton);
         js.setSize(300, 200);
         js.setLocation(450, 70);
@@ -76,12 +80,19 @@ class State {
         return ret;
     }
     private boolean same(int x, int y, int z) {
+        if (x == 7) x = 1;
+        if (y == 7) y = 1;
+        if (z == 7) z = 1;
         if (x == 0 || y == 0 || z == 0)
             return false;
         if (x == 6) {
-            return y == z || y == 6 || z == 6;
+            return ((y == z) && (y == 2 || y == 3 || y == 5 || y == 6)) || ((y == 6) && (z == 2 || z == 3 || z == 5)) || ((z == 6) && (y == 2 || y == 3 || y == 5));
         } else {
-            return (y == x || y == 6) && (z == x || z == 6);
+            if (x == 2 || x == 3 || x == 5) {
+                return (y == x || y == 6) && (z == x || z == 6);
+            } else {
+                return y == x && z == x;
+            }
         }
     }
     private void mark(int x, int y) {
@@ -193,11 +204,18 @@ class Grid extends JPanel {
 }
 
 class StartButton extends JButton implements ActionListener{
-    StartButton() {
-        this.setSize(90, 30);
-        this.setLocation(450, 20);
+    private int sI, sJ;
+    StartButton(int type) {
+        this.setSize(50, 30);
         this.setText("Go");
         this.addActionListener(this);
+        if (type == 0) {
+            sI = 150;
+            sJ = 100;
+        } else {
+            sI = 150;
+            sJ = 550;
+        }
     }
     private boolean match(int x, int y, final BufferedImage aim, final BufferedImage tot) {
         int ret = 0;
@@ -244,8 +262,8 @@ class StartButton extends JButton implements ActionListener{
         BufferedImage all = ImageIO.read(new File("../res/all.bmp"));
         int minI = width;
         int minJ = height;
-        for (int i = 150; i < minI; ++i) {
-            for (int j = 100; j < minJ; ++j) {
+        for (int i = sI; i < minI; ++i) {
+            for (int j = sJ; j < minJ; ++j) {
                 if (match(i, j, black, image) || match(i, j, blue, image) || match(i, j, red, image) || match(i, j, violet, image) || match(i, j, yellow, image) || match(i, j, all, image)) {
                     System.out.println(i + " " + j);
                     minI = Math.min(i, minI);
@@ -280,6 +298,7 @@ class StartButton extends JButton implements ActionListener{
     public void actionPerformed(ActionEvent event) {
         try {
             this.getImage();
+            Solver.run();
         } catch (Exception e) {
             e.printStackTrace();
         }
