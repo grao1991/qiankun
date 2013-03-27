@@ -169,7 +169,7 @@ class Controller {
             bi[4] = new ImageIcon("../res/violet.jpg");
             bi[5] = new ImageIcon("../res/yellow.jpg");
             bi[6] = new ImageIcon("../res/all.jpg");
-            bi[7] = new ImageIcon("../res/init.jpg");
+            bi[7] = new ImageIcon("../res/bomb.jpg");
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -254,6 +254,7 @@ class StartButton extends JButton implements ActionListener{
         int height = toolkit.getScreenSize().height;
         BufferedImage image = (new Robot()).createScreenCapture(new Rectangle(0, 0, width, height));
         System.out.println(image.getWidth() + " " + image.getHeight());
+        BufferedImage tmp = new BufferedImage(39, 39, BufferedImage.TYPE_INT_RGB); 
         BufferedImage black = ImageIO.read(new File("../res/black.bmp"));
         BufferedImage blue = ImageIO.read(new File("../res/blue.bmp"));
         BufferedImage red = ImageIO.read(new File("../res/red.bmp"));
@@ -289,7 +290,6 @@ class StartButton extends JButton implements ActionListener{
                     Controller.state.map[i][j] = 1;
                 } else {
                     Controller.state.map[i][j] = 7;
-                    System.out.println("xxx");
                 }
                 Grid.data[i][j].update();
             }
@@ -371,7 +371,6 @@ class Solver {
                     tmpState.map[i + 1][j] = tmp;
                     int cnt = tmpState.run();
                     if (cnt > 0) {
-//                        MainFrame.alist.add(i, j, i + 1, j, cnt);
                         MainFrame.sq.add(i, j, i + 1, j, cnt);
                     }
                 }
@@ -382,7 +381,6 @@ class Solver {
                     tmpState.map[i][j + 1] = tmp;
                     int cnt = tmpState.run();
                     if (cnt > 0) {
-//                        MainFrame.alist.add(i, j, i, j + 1, cnt);
                         MainFrame.sq.add(i, j, i, j + 1, cnt);
                     }
                 }
@@ -392,6 +390,7 @@ class Solver {
             System.out.println(s);
             MainFrame.alist.add(s);
         }
+        MainFrame.alist.setSelectedIndex(0);
     }
 }
 
